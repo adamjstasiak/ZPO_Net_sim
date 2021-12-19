@@ -3,36 +3,37 @@
 #include <list>
 #include "package.hpp"
 
-class IPackageStockpile
-{
+class IPackageStockpile{
 public:
     void push(Package &&);
     bool empty();
-    std::size_t size();
+    std::size_t size() ;
     ~IPackageStockpile();
 
-    using const_iteraror = std::list<Package>;
+    using const_iterator = std::list<Package>::const_iterator;
+    const_iterator cbegin() const { return Package.cbegin(); }
+    const_iterator cend() const { return Package.cend(); }
+    const_iterator begin() const { return Package.begin(); }
+    const_iterator end() const { return Package.end(); }
 };
 
-IPackageStockpile::~IPackageStockpile()
-{
+IPackageStockpile::~IPackageStockpile(){
+
 }
 
-enum class PackageQueueType
-{
+
+enum class PackageQueueType{
     FIFO,
     LIFO
 };
 
-class IPackageQueue
-{
+class IPackageQueue{
 public:
     Package pop();
     PackageQueueType get_queue_type();
 };
 
-class PackageQueue
-{
+class PackageQueue{
 public:
     PackageQueue(PackageQueueType);
 };
