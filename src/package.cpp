@@ -2,3 +2,4 @@
 //niezbędnych wyłącznie w ramach danego pliku źródłowego)
 
 #include "package.hpp"
+

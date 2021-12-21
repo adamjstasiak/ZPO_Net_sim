@@ -14,20 +14,14 @@ public:
     ~IPackageStockpile();
 
     using const_iterator = std::list<Package>::const_iterator;
-<<<<<<< HEAD
-    const_iterator cbegin() const { return Package::id_.cbegin(); }
-    const_iterator cend() const { return Package::id_.cend(); }
-    const_iterator begin() const { return Package.begin(); }
-    const_iterator end() const { return Package.end(); }
+
+    const_iterator cbegin() const { return Package_.queue_.cbegin(); }
+    const_iterator cend() const { return Package_.queue_.cend(); }
+    const_iterator begin() const { return Package_.queue_.begin(); }
+    const_iterator end() const { return Package_.queue_.end(); }
 
 private:
     PackageQueue Package_;
-=======
-    const_iterator cbegin() const { return Package.cbegin(); }
-    const_iterator cend() const { return Package.cend(); }
-    const_iterator begin() const { return Package.begin(); }
-    const_iterator end() const { return Package.end(); }
->>>>>>> b0013099e0b52f2b490d93a4dec77b3f51151ae4
 };
 
 IPackageStockpile::~IPackageStockpile(){
@@ -40,15 +34,21 @@ enum class PackageQueueType{
     LIFO
 };
 
-class IPackageQueue{
+class IPackageQueue : IPackageStockpile{
 public:
     Package pop();
-    PackageQueueType get_queue_type();
+    const PackageQueueType get_queue_type(){ return type_;};
+private:
+    PackageQueue Package_;
+    std::list<Package> queue_;
+    PackageQueueType type_;
 };
 
-class PackageQueue{
+class PackageQueue : IPackageQueue{
 public:
-    PackageQueue(PackageQueueType);
+    PackageQueue(PackageQueueType type, std::list<Package> queue = {}): type_(type) ,queue_(queue) {};
+    PackageQueueType type_;
+    std::list<Package> queue_;
 };
 
 #endif //UNTILTED_STORAGE_TYPES_HPP
