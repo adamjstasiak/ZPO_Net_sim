@@ -1,4 +1,8 @@
 //zawierający definicję klasy Package
+#ifndef UNTITLED_PACKAGE_HPP
+#define UNTITLED_PACKAGE_HPP
+
+
 #include "types.hpp"
 
 class Package
@@ -9,13 +13,10 @@ public:
     Package(Package &&);
     Package &operator=(Package &&);
     const ElementID get_id();
-    ~Package();
+    ~Package() = default;
+
+private:
+    int id_ = 0;
 };
 
-// Package::Package(/* args */)
-// {
-// }
-
-// Package::~Package()
-// {
-// }
+#endif //UNTITLED_PACKAGE_HPP
