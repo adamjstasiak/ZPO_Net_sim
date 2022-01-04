@@ -8,20 +8,16 @@
 
 class IPackageStockpile{
 public:
-    void push(Package &&);
-    bool empty();
-    std::size_t size() ;
-    ~IPackageStockpile();
-
     using const_iterator = std::list<Package>::const_iterator;
-
-    const_iterator cbegin() const { return Package_.queue_.cbegin(); }
-    const_iterator cend() const { return Package_.queue_.cend(); }
-    const_iterator begin() const { return Package_.queue_.begin(); }
-    const_iterator end() const { return Package_.queue_.end(); }
-
-private:
-    PackageQueue Package_;
+    using size_type = std::size_t;
+    virtual void push(Package &&) = 0;
+    virtual bool empty() = 0;
+    virtual size_type size() = 0;
+    virtual const_iterator cbegin() const = 0;
+    virtual const_iterator cend() const = 0;
+    virtual const_iterator begin() const = 0;
+    virtual const_iterator end() const = 0;
+    virtual ~IPackageStockpile() = default;
 };
 
 IPackageStockpile::~IPackageStockpile(){
@@ -34,19 +30,25 @@ enum class PackageQueueType{
     LIFO
 };
 
-class IPackageQueue : IPackageStockpile{
+class IPackageQueue : public IPackageStockpile{
 public:
-    Package pop();
-    const PackageQueueType get_queue_type(){ return type_;};
-private:
-    PackageQueue Package_;
-    std::list<Package> queue_;
-    PackageQueueType type_;
+    virtual Package pop() = 0;
+    virtual PackageQueueType get_queue_type() const = 0;
 };
 
-class PackageQueue : IPackageQueue{
+class PackageQueue : public IPackageQueue{
 public:
-    PackageQueue(PackageQueueType type, std::list<Package> queue = {}): type_(type) ,queue_(queue) {};
+    explicit PackageQueue(PackageQueueType type): type_(type) {};
+    Package pop() override;
+    PackageQueueType get_queue_type() const override {return type_;};
+    const_iterator cbegin() const {return queue_.cbegin();};
+    const_iterator cend() const {return queue_.cend();};
+    const_iterator begin() const {return queue_.begin();};
+    const_iterator end() const  {return queue_.end();};
+    void push(Package && package) {queue_.push_back(std::move(package));};
+    bool empty() {return queue_.empty();};
+    size_type size() {return queue_.size();};
+    
     PackageQueueType type_;
     std::list<Package> queue_;
 };

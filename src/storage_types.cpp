@@ -3,16 +3,18 @@
 
 #include "storage_types.hpp"
 #include <list>
-size_t IPackageStockpile::size() {
-}
-Package IPackageQueue::pop(){
+#include <iterator>
+
+
+Package PackageQueue::pop(){
     switch(type_){
         case PackageQueueType::FIFO:
-            Package x = *queue_.begin(); 
+            auto x = std::move(queue_.front()); 
             queue_.pop_front();
+            return x ;
         case PackageQueueType::LIFO:
-        Package x = *queue_.end(); 
+            auto x = std::move(queue_.back()); 
             queue_.pop_back();
+            return x;
     }
-
 }
