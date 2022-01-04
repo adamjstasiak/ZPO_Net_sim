@@ -1,0 +1,1 @@
+//ewentualne pomocnicze obiekty i funkcje globalne (np. generator liczb losowych)

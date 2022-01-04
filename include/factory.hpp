@@ -1,0 +1,1 @@
+//definicja szablonu klasy NodeCollection oraz definicja klasy Factory
