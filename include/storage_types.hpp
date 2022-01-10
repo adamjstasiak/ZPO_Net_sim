@@ -20,9 +20,6 @@ public:
     virtual ~IPackageStockpile() = default;
 };
 
-IPackageStockpile::~IPackageStockpile(){
-
-}
 
 
 enum class PackageQueueType{
