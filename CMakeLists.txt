@@ -12,4 +12,10 @@ add_executable(ZPO_Net_sim
         include/storage_types.hpp
         include/types.hpp
         src/package.cpp
-        src/storage_types.cpp)
+        src/storage_types.cpp
+        include/nodes.hpp
+        include/helpers.hpp
+        include/factory.hpp
+        src/nodes.cpp
+        src/helpers.cpp
+        src/factory.cpp)

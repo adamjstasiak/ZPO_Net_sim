@@ -8,13 +8,16 @@
 
 Package PackageQueue::pop(){
     switch(type_){
-        case PackageQueueType::FIFO:
-            auto x = std::move(queue_.front()); 
-            queue_.pop_front();
-            return x ;
-        case PackageQueueType::LIFO:
-            auto x = std::move(queue_.back()); 
+        case PackageQueueType::LIFO:{
+            auto y = std::move(queue_.back());
             queue_.pop_back();
+            return y;
+        }
+        case PackageQueueType::FIFO: {
+            auto x = std::move(queue_.front());
+            queue_.pop_front();
             return x;
+        }
+
     }
 }
