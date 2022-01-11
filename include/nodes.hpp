@@ -12,7 +12,10 @@
 
 class Storehouse : public IPackageStockpile{
 public:
-    Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d) {};
+    Storehouse(ElementID id, std::unique_ptr<IPackageStockpile> d) : id_(id){};
+private:
+    ElementID id_;//  = Package.get_id();
+    std::unique_ptr<IPackageStockpile> d_;
 };
 
 class IPackageReceiver : public Storehouse{
@@ -23,10 +26,15 @@ public:
 
 class Worker : public IPackageQueue{
 public:
-    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q) {};
+    Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q) : id_(id), pd_(pd){};
     void do_work(Time t);
     TimeOffset get_processing_duration(void);
     Time get_package_processing_start_time(void);
+private:
+    ElementID id_;
+    TimeOffset pd_;
+    std::unique_ptr<IPackageQueue> q_;
+
 };
 
 class ReceiverPreferences {
@@ -46,10 +54,13 @@ public:
 
 class Ramp{
 public:
-    Ramp(ElementID id, TimeOffset di){};
+    Ramp(ElementID id, TimeOffset di) : id_(id), di_(di){};
     void deliver_goods(Time t) ;
     TimeOffset get_delivery_interval(void);
     ElementID get_id(void);
+private:
+    ElementID id_;
+    TimeOffset di_;
 };
 
 class PackageSender : public Worker, ReceiverPreferences, Ramp{
