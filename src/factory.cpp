@@ -43,4 +43,63 @@ void Factory::remove_storehouse(ElementID id){
     remove_receiver(workers_,id);
     storehouses_.remove_by_id(id);
 }
-#endif //UNTILTED_FACTORY_HPP
+
+bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*,NodeColor>& node_colors) const{
+    if(node_colors[sender]== NodeColor::VERIFIED){
+        return true;
+    }
+
+    node_colors[sender] = NodeColor::VISITED:
+    if(sender->receiver_preferences_.get_preferences().empty()){
+        throw std::logic_error("No recipients");
+    }
+    bool is_reachable = false;
+    for(const auto& el: sender->receiver_preferences_.get_preferences()){
+        if(el.first->get_receiver_type()== ReceiverType::Storehouse){
+            is_reachable = true;
+        }
+        else if((el.first->get_receiver_type()== ReceiverType::Worker){
+            IPackageReceiver* receiver_ptr = el.first;
+            auto worker_ptr dynamic_cast<Worker*>(receiver_ptr);
+            auto sendrecv_ptr = dynamic_cast<PackageSender*>(worker_ptr);
+            if(sendrecv_ptr==sender){
+                continue;
+            }
+            is_reachable = true;
+            if(node_colors[sendrecv_ptr]==NodeColor::UNVISITED){
+                has_reachable_storehouse(sendrecv_ptr,node_colors);
+            }
+
+        }
+    }
+    node_colors[sender] = NodeColor::VERIFIED;
+    if(is_reachable){
+        return true;
+    }
+    else
+        throw std::logic_error("No recipients");
+}        
+bool Factory::is_consistent() const{
+    std::map<const PackageSender*, NodeColor> node_colors;
+    for(const auto& el: workers_){
+        node_colors[(PackageSender *) &el] = NodeColor::UNVISITED; 
+    }
+    for(const auto& el: ramps_){
+        node_colors[(PackageSender *) &el] = NodeColor::UNVISITED; 
+    }
+
+    for(const auto& el: ramps_){
+        try{
+            has_reachable_storehouse(&el, node_colors);
+            return true;
+        }
+        catch(const std::exception& err){
+            return false;
+        }
+    }
+    return true;
+
+}
+
+
+#endif //UNTILTED_FACTORY_CPP
