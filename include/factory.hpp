@@ -7,11 +7,14 @@
 #include "types.hpp"
 #include <list>
 
+enum class NodeColor{
+    UNVISITED, VISITED, VERIFIED
+}
 
 template<class Node>
 class NodeCollection{
 public:
-    using container_t = typename std_list<Node>;
+    using container_t = typename std::list<Node>;
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
 
@@ -44,7 +47,7 @@ public:
         }
     }
 
-    container_t get_nodes_list()  const { return list_of_nodes_; }
+    container_t get_nodes_list()  const { return list_of_nodes_ ; }
     const_iterator cbegin() const {return list_of_nodes_.cbegin();}
     iterator begin() { return  list_of_nodes_.begin();}
     const_iterator cend() const { return list_of_nodes_.cend();}
@@ -65,7 +68,7 @@ class Workers: public NodeCollection<Worker>{
 
 };
 
-class Storehouses: public NodeCollection<Storehouse?{
+class Storehouses: public NodeCollection<Storehouse>{
 
 };
 
@@ -108,8 +111,11 @@ private:
     NodeCollection <Worker> workers_;
     NodeCollection <Storehouse> storehouses_;
     NodeCollection <Ramp> ramps_;
-
+    template<class Node>
     void remove_receiver(NodeCollection<Node>& collection, ElementID id) {collection.remove_by_id(id);};
 };
 
+Factory load_factory_structure(std::istream& is);
+void save_factory_structure(Factory& factory,std::ostream& os);
 
+#endif //UNTILTED_FACTORY_HPP
