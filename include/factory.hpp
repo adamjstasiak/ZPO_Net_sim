@@ -101,7 +101,8 @@ public:
     NodeCollection<Storehouse>::const_iterator storehouse_begin() const {return  storehouses_.begin();};
     NodeCollection<Storehouse>::const_iterator storehouse_end() const {return  storehouses_.end();};
 
-    bool is_consistent(void) const;
+    bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors);
+    bool is_consistent() const;
 
     void do_deliveries(Time time);
     void do_package_passing(void);
