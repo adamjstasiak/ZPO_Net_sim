@@ -53,10 +53,10 @@ public:
     using const_iterator = preferences_t::const_iterator;
 
     ReceiverPreferences(ProbabilityGenerator pg = probability_generator) : generator(pg) {};
-    void add_receiver(IPackageReceiver* r) ;
+    void add_receiver(IPackageReceiver* r);
     void remove_receiver(IPackageReceiver* r);
     IPackageReceiver* choose_receiver(void);
-    preferences_t& get_preferences(void);
+    preferences_t& get_preferences(void) { return preferences;};
 
 
 
@@ -88,10 +88,14 @@ protected:
 
 class Worker : public PackageSender, public IPackageReceiver{
 public:
+    using preferences_t = std::map<IPackageReceiver*,double>;
+
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q) : id_(id), pd_(pd), q_(std::move(q)){};
     void do_work(Time t);
     TimeOffset get_processing_duration(void);
     Time get_package_processing_start_time(void);
+    preferences_t preferences;
+
 private:
     ElementID id_;
     TimeOffset pd_;
@@ -103,13 +107,18 @@ private:
 
 class Ramp{
 public:
+    using preferences_t = std::map<IPackageReceiver*,double>;
+
     Ramp(ElementID id, TimeOffset di) : id_(id), di_(di){};
     void deliver_goods(Time t) ;
     TimeOffset get_delivery_interval(void);
     ElementID get_id(void);
+    preferences_t preferences;
+
 private:
     ElementID id_;
     TimeOffset di_;
+
 };
 
 

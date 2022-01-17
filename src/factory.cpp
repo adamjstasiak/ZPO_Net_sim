@@ -15,17 +15,18 @@ void Factory::do_work(Time time){
 }
 
 void Factory::do_deliveries(Time time){
-    std::for_each(ramps_.begin(),ramps.end(), [time](auto& el){ el.deliver_goods(time); });
+    std::for_each(ramps_.begin(),ramps_.end(), [time](auto& el){ el.deliver_goods(time); });
 }
 
 void Factory::do_package_passing(){
     std::for_each(ramps_.begin(),ramps_.end(), [](auto& el){el.send_package();});
     std::for_each(workers_.begin(),workers_.end(), [](auto& el){el.send_package();});
 };
+template<class Node>
 
-void Factory::remove_receiver(NodeCollection<Node>& collection, Element id){
+void Factory::remove_receiver(NodeCollection<Node>& collection, ElementID id){
     for(auto &el: collection) {
-        for(auto& i:el.preferences_.get_preferences())
+        for(auto& i:el.preferences_t.get_preferences())
             if(i.first->get_id== id){
                 el.preferences_.remove_receiver(i.first);
                 break;
