@@ -10,8 +10,15 @@ void ReceiverPreferences::remove_receiver(IPackageReceiver* r){
     preferences.erase(search);
 };
 void ReceiverPreferences::add_receiver(IPackageReceiver* r){
-    double random = (rand() % 10000 + 1) / 10001;
-    preferences.insert(std::pair<IPackageReceiver*,double>(r, random));
+
+    preferences.insert(std::pair<IPackageReceiver*,double>(r, 0.0));
+    for (auto& rl : preferences){
+        rl.second = 1.0 / (double)preferences.size();
+    }
+};
+void IPackageReceiver::receive_package(Package && p){
+
+
 };
 
 #endif //UNTILTED_NODES_HPP
