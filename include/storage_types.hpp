@@ -38,13 +38,13 @@ public:
     explicit PackageQueue(PackageQueueType type): type_(type) {};
     Package pop() override;
     PackageQueueType get_queue_type() const override {return type_;};
-    const_iterator cbegin() const {return queue_.cbegin();};
-    const_iterator cend() const {return queue_.cend();};
-    const_iterator begin() const {return queue_.begin();};
-    const_iterator end() const  {return queue_.end();};
-    void push(Package && package) {queue_.push_back(std::move(package));};
-    bool empty() {return queue_.empty();};
-    size_type size() {return queue_.size();};
+    const_iterator cbegin() const override{return queue_.cbegin();};
+    const_iterator cend() const override{return queue_.cend();};
+    const_iterator begin() const override{return queue_.begin();};
+    const_iterator end() const  override{return queue_.end();};
+    void push(Package && package) override{queue_.push_back(std::move(package));};
+    bool empty() override{return queue_.empty();};
+    size_type size() override{return queue_.size();};
     
     PackageQueueType type_;
     std::list<Package> queue_;
