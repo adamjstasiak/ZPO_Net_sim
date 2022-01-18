@@ -16,6 +16,13 @@ void ReceiverPreferences::add_receiver(IPackageReceiver* r){
         rl.second = 1.0 / (double)preferences.size();
     }
 }
+void Ramp::deliver_goods(Time t){
+    if(t % di_ == 1){
+        (id_.get_sending_buffer());
+    }
+
+
+}
 
 
 #endif //UNTILTED_NODES_HPP

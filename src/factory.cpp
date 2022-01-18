@@ -26,9 +26,9 @@ template<class Node>
 
 void Factory::remove_receiver(NodeCollection<Node>& collection, ElementID id){
     for(auto &el: collection) {
-        for(auto& i:el.preferences_t.get_preferences())
-            if(i.first->get_id== id){
-                el.preferences_.remove_receiver(i.first);
+        for(auto& i:el.get_preferences())
+            if(i.first->get_id() == id){
+                el.remove_receiver(i.first);
                 break;
             }
     }
@@ -44,24 +44,24 @@ void Factory::remove_storehouse(ElementID id){
     remove_receiver(workers_,id);
     storehouses_.remove_by_id(id);
 }
-
-bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*,NodeColor>& node_colors) const{
+// W has_reachable_storehouse brakuje  'const'  przed senderm tak samo w factory.hpp ponieważ get_preferences musieliśmy zdefiniować jako nie const w nodes.hpp
+bool Factory::has_reachable_storehouse( PackageSender* sender, std::map<const PackageSender*,NodeColor>& node_colors) {
     if(node_colors[sender]== NodeColor::VERIFIED){
         return true;
     }
 
-    node_colors[sender] = NodeColor::VISITED:
+    node_colors[sender] = NodeColor::VISITED;
     if(sender->receiver_preferences_.get_preferences().empty()){
         throw std::logic_error("No recipients");
     }
     bool is_reachable = false;
-    for(const auto& el: sender->receiver_preferences_.get_preferences()){
-        if(el.first->get_receiver_type()== ReceiverType::Storehouse){
+    for( auto& el: sender->receiver_preferences_.get_preferences()){
+        if(el.first->get_receiver_type()== ReceiverType::STOREHOUSE){
             is_reachable = true;
         }
-        else if((el.first->get_receiver_type()== ReceiverType::Worker){
+        else if((el.first->get_receiver_type()== ReceiverType::WORKER)){
             IPackageReceiver* receiver_ptr = el.first;
-            auto worker_ptr dynamic_cast<Worker*>(receiver_ptr);
+            auto worker_ptr = dynamic_cast<Worker*>(receiver_ptr);
             auto sendrecv_ptr = dynamic_cast<PackageSender*>(worker_ptr);
             if(sendrecv_ptr==sender){
                 continue;
@@ -80,7 +80,7 @@ bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<con
     else
         throw std::logic_error("No recipients");
 }        
-bool Factory::is_consistent() const{
+bool Factory::is_consistent() {//USUNIETE CONST
     std::map<const PackageSender*, NodeColor> node_colors;
     for(const auto& el: workers_){
         node_colors[(PackageSender *) &el] = NodeColor::UNVISITED; 
@@ -91,7 +91,7 @@ bool Factory::is_consistent() const{
 
     for(const auto& el: ramps_){
         try{
-            has_reachable_storehouse(&el, node_colors);
+            has_reachable_storehouse((PackageSender *) &el, node_colors);
             return true;
         }
         catch(const std::exception& err){
