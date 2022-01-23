@@ -52,8 +52,7 @@ public:
     iterator begin() { return  list_of_nodes_.begin();}
     const_iterator cend() const { return list_of_nodes_.cend();}
     iterator end() { return  list_of_nodes_.end();}
-    //const_iterator begin() {return  list_of_nodes_.begin();}
-    //const_iterator end() { return list_of_nodes_.end();}
+
 
 private:
     container_t list_of_nodes_;
@@ -101,8 +100,8 @@ public:
     NodeCollection<Storehouse>::const_iterator storehouse_begin()  {return  storehouses_.begin();};
     NodeCollection<Storehouse>::const_iterator storehouse_end()  {return  storehouses_.end();};
 
-    bool has_reachable_storehouse( PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors);
-    bool is_consistent() ;
+    bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& node_colors);
+    bool is_consistent();
 
     void do_deliveries(Time time);
     void do_package_passing(void);
@@ -116,6 +115,26 @@ private:
     void remove_receiver(NodeCollection<Node>& collection, ElementID id);
 };
 
+template<class Node>
+
+void Factory::remove_receiver(NodeCollection<Node>& collection, ElementID id) {
+    Node *node = &(*collection.find_by_id(id));
+
+    std::for_each(ramps_.begin(), ramps_.end(),
+                  [&node](auto &ramp) { ramp.receiver_preferences.remove_receiver(node); });
+    std::for_each(workers_.begin(), workers_.end(),
+                  [&node](auto &worker) { worker.receiver_preferences.remove_receiver(node); });
+    collection.remove_by_id(id);
+}
+enum ElementType{
+    RAMP,WORKER,STOREHOUSE,LINK
+};
+
+struct ParsedLineData{
+    ElementType element_type
+    std::map<std::string, std::string> parameters; 
+}
+ParsedLineData parse_line(const std::str& line);
 Factory load_factory_structure(std::istream& is);
 void save_factory_structure(Factory& factory,std::ostream& os);
 

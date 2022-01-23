@@ -41,7 +41,7 @@ public:
      const_iterator begin() const override{return d_->begin();};
      const_iterator end() const override{return d_->end();};
     ReceiverType get_receiver_type() const override {return ReceiverType::STOREHOUSE;};
-
+    virtual ~Storehouse() = default;
 private:
     ElementID id_;//  = Package.get_id();
     std::unique_ptr<IPackageStockpile> d_;
@@ -60,9 +60,9 @@ public:
     const_iterator  preferences_cend() const {return preferences.cend();};
     const_iterator preferences_begin() {return preferences.begin();};
     const_iterator preferences_end() {return preferences.end();};
-    IPackageReceiver* choose_receiver(void) {return preferences_cbegin()->first;};
+    IPackageReceiver* choose_receiver(void);
 
-    preferences_t & get_preferences()  { return preferences;};
+    const preferences_t & get_preferences() const { return preferences;};
     //
 
 
@@ -74,13 +74,14 @@ public:
 
 class PackageSender{
 public:
+    using Sendingbuffer =   std::optional<Package>;
     PackageSender(PackageSender&&) = default;
 
     PackageSender() {};
 
     void send_package(void);
 
-    std::optional<Package>& get_sending_buffer(void) const;
+    const std::optional<Package>& get_sending_buffer(void) const {return sending_buffer;};
 
     virtual ~PackageSender() = default;
 
@@ -89,30 +90,37 @@ public:
 
 protected:
     void push_package(Package&& package);
+private:
+    Sendingbuffer sending_buffer;
+
 
 };
 
 
-class Worker : public PackageSender, public IPackageReceiver, public ReceiverPreferences{
+class Worker : public PackageSender, public IPackageReceiver {
 public:
     using preferences_t = std::map<IPackageReceiver*,double>;
 
     Worker(ElementID id, TimeOffset pd, std::unique_ptr<IPackageQueue> q) : id_(id), pd_(pd), q_(std::move(q)){};
     void do_work(Time t);
     TimeOffset get_processing_duration(void) {return pd_;};
-    Time get_package_processing_start_time(void);
+    Time get_package_processing_start_time(void) {return proces;};
+    IPackageQueue* get_queue(void);
+    std::optional<Package>& get_processing_buffer(void);
     preferences_t preferences;
-
+    
 private:
     ElementID id_;
     TimeOffset pd_;
     std::unique_ptr<IPackageQueue> q_;//Może dodanie zmiennej klasy packagequeue /albo odwołanie do metod klasy ipachagequeu przez inteligentny wskaźnik
-
+    ReceiverPreferences receiver_preferences_;
+    std::optional<Package> worker_buffer;
+    Time proces;
 };
 
 
 
-class Ramp: public ReceiverPreferences{
+class Ramp: public PackageSender{
 public:
     using preferences_t = std::map<IPackageReceiver*,double>;
 
@@ -125,6 +133,8 @@ public:
 private:
     ElementID id_;
     TimeOffset di_;
+    ReceiverPreferences receiver_preferences_;
+
 
 };
 
