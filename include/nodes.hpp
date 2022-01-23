@@ -108,12 +108,12 @@ public:
     IPackageQueue* get_queue(void);
     std::optional<Package>& get_processing_buffer(void);
     preferences_t preferences;
-    
+    ReceiverPreferences receiver_preferences_;
 private:
     ElementID id_;
     TimeOffset pd_;
     std::unique_ptr<IPackageQueue> q_;//Może dodanie zmiennej klasy packagequeue /albo odwołanie do metod klasy ipachagequeu przez inteligentny wskaźnik
-    ReceiverPreferences receiver_preferences_;
+
     std::optional<Package> worker_buffer;
     Time proces;
 };
@@ -129,11 +129,11 @@ public:
     TimeOffset get_delivery_interval(void) {return di_;};
     ElementID get_id(void) {return id_;};
     preferences_t preferences;
-
+    ReceiverPreferences receiver_preferences_;
 private:
     ElementID id_;
     TimeOffset di_;
-    ReceiverPreferences receiver_preferences_;
+
 
 
 };

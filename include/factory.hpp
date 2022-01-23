@@ -127,14 +127,15 @@ void Factory::remove_receiver(NodeCollection<Node>& collection, ElementID id) {
     collection.remove_by_id(id);
 }
 enum ElementType{
-    RAMP,WORKER,STOREHOUSE,LINK
+    RAMP,WORKER,STOREHOUSE,LINK,LOADING_RAMP
+
 };
 
 struct ParsedLineData{
-    ElementType element_type
+    ElementType element_type;
     std::map<std::string, std::string> parameters; 
-}
-ParsedLineData parse_line(const std::str& line);
+};
+ParsedLineData parse_line(const std::string & line);
 Factory load_factory_structure(std::istream& is);
 void save_factory_structure(Factory& factory,std::ostream& os);
 
