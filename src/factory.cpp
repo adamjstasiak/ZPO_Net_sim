@@ -115,7 +115,7 @@ ParsedLineData parse_line(const std::string& line){
         std::vector<std::string> key_value;
         std::string tok;
         std::istringstream single_token(el);
-        char del = "=";
+        char del = '=';
         while (std::getline(single_token,tok,del)){
             key_value.push_back(tok);
         }
@@ -131,88 +131,91 @@ Factory load_factory_structure(std::istream& is){
     while (std::getline(is,line)){
         if(line[0] == ';' or line.empty())
             continue;
-        ParsedLineData parsed_line = parsed_line(line);
+        ParsedLineData parsed_line;
+        parsed_line = parse_line(line);
         if(parsed_line.element_type == ElementType::LOADING_RAMP){
             ElementID id = 0;
             TimeOffset di = 0;
             for(const auto&el: parsed_line.parameters){
                 if(el.first == "id")
-                    id = std::stoi(el.second);
+                    id = static_cast<ElementID>(std::stoi(el.second));
                 else if(el.first == "delivery-interval")
-                    di = std::stoi(el.second);
+                    di = static_cast<TimeOffset>(std::stoi(el.second));
             }
             factory.add_ramp(Ramp(id,di));
 
         }
-        else if(parsed_line.element_type == ElementType::WORKER){
+        else if(parsed_line.element_type == ElementType::WORKER) {
             PackageQueueType que;
             ElementID id = 0;
-            TimeOffset pd = 0; 
-            for(const auto&el: parsed_line.parameters){
-                if(el.first == "id")
-                    id = std::stoi(el.second);
-                else if(el.first == "processing-time")
-                    pd = std::stoi(el.second);
-                else if(el.first == "queue-type"){
-                    if(el.second =="FIFO")
+            TimeOffset pd = 0;
+            for (const auto &el: parsed_line.parameters) {
+                if (el.first == "id")
+                    id = static_cast<ElementID>(std::stoi(el.second));
+                else if (el.first == "processing-time")
+                    pd = static_cast<TimeOffset>(std::stoi(el.second));
+                else if (el.first == "queue-type") {
+                    if (el.second == "FIFO")
                         que = PackageQueueType::FIFO;
-                    else if(el.second == "LIFO")
+                    else if (el.second == "LIFO")
                         que = PackageQueueType::LIFO;
                 }
             }
+            std::unique_ptr<IPackageQueue> q = std::make_unique<PackageQueue>(que);
+            factory.add_worker(Worker(id, pd, std::move(q)));
         }
-        std::unique_ptr<IPackageQueue> q =std::make_unique<PackageQueue>(que);
-        factory.add_worker(Worker(id,pd,std::move(q)));
-    }
-    else if(parsed_line.element_type == ElementType::STOREHOUSE){
-        std::string src;
-        std::string src_id;
-        std::string dest;
-        std::string dest_id;
-        for(const auto&el: parsed_line.parameters){
-            if(el.first =="src"){
-                std::vector<std::string> key_value;
-                std::string tok;
-                std::istringstream single_token(el.second);
-                char del "-";
-                while (std::getline(single_token,tok,del))
-                    key_value.push_back(tok);
-                src = key_value[0];
-                src_id = key_value[1];
+        else if(parsed_line.element_type == ElementType::STOREHOUSE)
+            factory.add_storehouse(Storehouse(static_cast<ElementID>(std::stoi(parsed_line.parameters["id"]))));
+        else if(parsed_line.element_type == ElementType::LINK){
+            std::string src;
+            std::string src_id;
+            std::string dest;
+            std::string dest_id;
 
-            }else if(el.first == "dest"){
-                std::vector<std::string> key_value;
-                std::string tok;
-                std::istringstream single_token(el.second);
-                char del = '-';
-                while (std::getline(single_token, tok, del))
-                    key_value.push_back(tok);
-                dest = key_value[0];
-                dest_id = key_value[1]
+            for(const auto&el: parsed_line.parameters){
+                if(el.first =="src"){
+                    std::vector<std::string> key_value;
+                    std::string tok;
+                    std::istringstream single_token(el.second);
+                    char del = '-';
+                    while (std::getline(single_token,tok,del))
+                        key_value.push_back(tok);
+                    src = key_value[0];
+                    src_id = key_value[1];
+
+                }else if(el.first == "dest"){
+                    std::vector<std::string> key_value;
+                    std::string tok;
+                    std::istringstream single_token(el.second);
+                    char del = '-';
+                    while (std::getline(single_token, tok, del))
+                        key_value.push_back(tok);
+                    dest = key_value[0];
+                    dest_id = key_value[1];
+                }
             }
-        }
-        if(src == "worker"){
-            if(dest == "store"){
-                auto w = factory.find_worker_by_id(std::stoi(src_id));
-                auto s = factory.find_storehouse_by_id(std::stoi(dest_id));
-                w->receiver_preferences_.add_receiver(&(*s));
+            if(src == "worker"){
+                if(dest == "store"){
+                    auto w = factory.find_worker_by_id(static_cast<ElementID>(std::stoi(src_id)));
+                    auto s = factory.find_storehouse_by_id(static_cast<ElementID>(std::stoi(dest_id)));
+                    w->receiver_preferences_.add_receiver(&(*s));
+                }
+                else if(dest =="worker"){
+                    auto w = factory.find_worker_by_id(static_cast<ElementID>(std::stoi(src_id)));
+                    auto w2 = factory.find_worker_by_id(static_cast<ElementID>(std::stoi(dest_id)));
+                    w->receiver_preferences_.add_receiver(&(*w2));
+                }
             }
-            else if(dest =="worker"){
-                auto w = factory.find_worker_by_id(std::stoi(src_id));
-                auto w2 = factory.find_worker_by_id(std::stoi(dest_id));
-                w->receiver_preferences_.add_receiver(&(*w2));
-            }
-        }
-        else if(src =="ramp"){
-            if(dest == "worker"){
-                auto r = factory.find_ramp_by_id(std::stoi(src_id));
-                auto w = factory.find_worker_by_id(std::stoi(dest_id));
-                r->receiver_preferences_.add_receiver(&(*w));
-            }
-            else if(dest == "store") {
-                auto r = factory.find_ramp_by_id(std::stoi(src_id));
-                auto s = factory.find_storehouse_by_id(std::stoi(dest_id));
-                r->receiver_preferences_.add_receiver(&(*s));
+            else if(src =="ramp") {
+                if (dest == "worker") {
+                    auto r = factory.find_ramp_by_id(static_cast<ElementID>(std::stoi(src_id)));
+                    auto w = factory.find_worker_by_id(static_cast<ElementID>(std::stoi(dest_id)));
+                    r->receiver_preferences_.add_receiver(&(*w));
+                } else if (dest == "store") {
+                    auto r = factory.find_ramp_by_id(static_cast<ElementID>(std::stoi(src_id)));
+                    auto s = factory.find_storehouse_by_id(static_cast<ElementID>(std::stoi(dest_id)));
+                    r->receiver_preferences_.add_receiver(&(*s));
+                }
             }
         }
     }
@@ -222,7 +225,7 @@ Factory load_factory_structure(std::istream& is){
 void save_factory_structure(Factory& factory,std::ostream& os){
     if(factory.ramp_begin() != factory.ramp_end()){
         os << "; == LOADING_RAMPS ==" << '\n' << '\n';
-        for (auto it = factory.ramp_begin(); it != factory.ramp_end(); it++){
+        for (auto it = factory.ramp_cbegin(); it != factory.ramp_cend(); it++){
             os << "LOADING_RAMP " << "id=" << std::to_string(it->get_id()) << " delivery-interval="
                << std::to_string(it->get_delivery_interval());
             os << '\n';
@@ -231,7 +234,7 @@ void save_factory_structure(Factory& factory,std::ostream& os){
     os << '\n';
     if(factory.worker_begin() != factory.worker_end()){
         os << "; == WORKERS ==" << '\n' << '\n';
-        for(auto it = factory.worker_begin(); it != factory.worker_end(); it++){
+        for(auto it = factory.worker_cbegin(); it != factory.worker_cend(); it++){
             os<< "WORKER " << "id=" << std::to_string(it->get_id()) << " processing-time="
                << std::to_string(it->get_processing_duration()) << " queue-type=";
             if (it->get_queue()->get_queue_type() == PackageQueueType::FIFO)
@@ -256,9 +259,9 @@ void save_factory_structure(Factory& factory,std::ostream& os){
         for (auto it = factory.ramp_begin(); it != factory.ramp_end(); it++) {
             for(auto el = it->receiver_preferences_.get_preferences().rbegin(); el != it->receiver_preferences_.get_preferences().rend(); el++){
                 os << "LINK " << "src=ramp-" << it->get_id() << " dest=";
-                if(el->first->get_receiver_type() == ReceiverType::Worker)
+                if(el->first->get_receiver_type() == ReceiverType::WORKER)
                     os << "worker-" << el->first->get_id();
-                else if(el->first->get_receiver_type() == ReceiverType::Storehouse)
+                else if(el->first->get_receiver_type() == ReceiverType::STOREHOUSE)
                     os << "store-" << el->first->get_id();
                 os << "\n";
             }
@@ -269,9 +272,9 @@ void save_factory_structure(Factory& factory,std::ostream& os){
         for (auto it = factory.worker_begin(); it != factory.worker_end(); it++) {
             for(auto el = it->receiver_preferences_.get_preferences().rbegin(); el != it->receiver_preferences_.get_preferences().rend(); el++){
                 os << "LINK " << "src=worker-" << it->get_id() << " dest=";
-                if(el->first->get_receiver_type() == ReceiverType::Worker)
+                if(el->first->get_receiver_type() == ReceiverType::STOREHOUSE)
                     os << "worker-" << el->first->get_id();
-                else if(el->first->get_receiver_type() == ReceiverType::Storehouse)
+                else if(el->first->get_receiver_type() == ReceiverType::STOREHOUSE)
                     os << "store-" << el->first->get_id();
                 os << "\n";
             }
@@ -282,4 +285,4 @@ void save_factory_structure(Factory& factory,std::ostream& os){
 }
 
 
-#endif //UNTILTED_FACTORY_CPP
+#endif //UNTILTED_FACTORY_CPP;
